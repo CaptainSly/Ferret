@@ -28,8 +28,8 @@ public class Engine implements Disposable {
 
 	// Game Loop Variables
 	private boolean isRunning = false;
-	private float targetUps = 30;
-	private float targetFps = 60;
+	private float targetUps = 60;
+	private float targetFps = 120;
 
 	public void run() {
 		// Startup
@@ -101,23 +101,23 @@ public class Engine implements Disposable {
 
 		long updateTime = initialTime;
 		while (isRunning) {
-			glfwPollEvents();
-
 			long now = System.currentTimeMillis();
 			deltaUpdate += (now - initialTime) / timeUpdate;
 			deltaFps += (now - initialTime) / timeRender;
+
+			glfwPollEvents();
 
 			// Window Should Close
 			if (glfwWindowShouldClose(window.getWindowPointer()))
 				isRunning = false;
 
 			if (targetFps <= 0 || deltaFps >= 1) {
-				float delta = now - initialTime;
+				float delta = (now - initialTime) / 1000.f;
 				input(delta);
 			}
 
 			if (deltaUpdate >= 1) {
-				float delta = now - updateTime;
+				float delta = (now - updateTime) / 1000.f;
 				update(delta);
 				updateTime = now;
 				deltaUpdate--;
@@ -126,8 +126,8 @@ public class Engine implements Disposable {
 			if (targetFps <= 0 || deltaFps >= 1) {
 				glViewport(0, 0, window.getWindowWidth(), window.getWindowHeight());
 				render();
-				deltaFps--;
 				glfwSwapBuffers(window.getWindowPointer());
+				deltaFps--;
 			}
 
 			initialTime = now;
@@ -160,6 +160,9 @@ public class Engine implements Disposable {
 	private void input(float delta) {
 		Ferret.input.update();
 		currentGameScreen.onInput(delta);
+
+		if (Ferret.input.isKeyDown(GLFW_KEY_ESCAPE))
+			glfwSetWindowShouldClose(window.getWindowPointer(), true);
 	}
 
 	public Window getWindow() {

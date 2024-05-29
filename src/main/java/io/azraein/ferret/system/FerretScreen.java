@@ -47,22 +47,13 @@ public abstract class FerretScreen implements Disposable {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_BACK);
 		onRender();
 	}
 
 	public void renderUi() {
-		// Switch to orthographic projection
-
-		// TODO: Determine if this does anything at all, or if this will need to be
-		// replaced.
-
-		glDisable(GL_DEPTH_TEST);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0.0, engine.getWindow().getWindowWidth(), engine.getWindow().getWindowHeight(), 0.0, -1.0, 1.0);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
+		
 		onUiRender();
 	}
 

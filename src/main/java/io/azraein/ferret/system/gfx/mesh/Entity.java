@@ -54,6 +54,12 @@ public class Entity {
 		position.z = z;
 	}
 
+	public final void setScale(float scale) {
+		this.scale.x = scale;
+		this.scale.y = scale;
+		this.scale.z = scale;
+	}
+	
 	public final void setScale(float x, float y, float z) {
 		scale.x = x;
 		scale.y = y;
