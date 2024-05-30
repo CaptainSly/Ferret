@@ -15,9 +15,9 @@ import org.lwjgl.system.Callback;
 
 import io.azraein.ferret.TestScreen;
 import io.azraein.ferret.system.Ferret;
-import io.azraein.ferret.system.FerretScreen;
 import io.azraein.ferret.system.Registry;
 import io.azraein.ferret.system.calendar.Calendar;
+import io.azraein.ferret.system.gfx.FerretScreen;
 import io.azraein.ferret.system.input.Input;
 import io.azraein.ferret.system.lua.FerretLua;
 import io.azraein.ferret.system.utilities.Utils;
@@ -131,7 +131,6 @@ public class FXEngine extends BorderPane {
 		ferretScreen.onRender();
 
 		glDisable(GL_DEPTH_TEST);
-		ferretScreen.renderUi();
 	}
 
 	// Game Calendar Stuff, needed to be close to engine loop as possible.

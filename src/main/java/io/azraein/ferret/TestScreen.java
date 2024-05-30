@@ -10,10 +10,10 @@ import java.util.List;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
-import io.azraein.ferret.system.Camera;
 import io.azraein.ferret.system.Engine;
 import io.azraein.ferret.system.Ferret;
-import io.azraein.ferret.system.FerretScreen;
+import io.azraein.ferret.system.gfx.Camera;
+import io.azraein.ferret.system.gfx.FerretScreen;
 import io.azraein.ferret.system.gfx.mesh.Entity;
 import io.azraein.ferret.system.gfx.mesh.Mesh;
 import io.azraein.ferret.system.gfx.model.Material;
@@ -38,13 +38,15 @@ public class TestScreen extends FerretScreen {
 
 	@Override
 	public void onInit() {
-
 		projection = new Projection((int) engine.getWindow().getWindowWidth(),
 				(int) engine.getWindow().getWindowHeight());
 
+		String vertexShader = "src/main/resources/shaders/default/default_vertex.glsl";
+		String fragmentShader = "src/main/resources/shaders/default/default_fragment.glsl";
+
 		try {
-			shaderProgram = new ShaderProgram(FileUtils.fileToString("src/main/resources/vertex.glsl"),
-					FileUtils.fileToString("src/main/resources/fragment.glsl"));
+			shaderProgram = new ShaderProgram(FileUtils.fileToString(vertexShader),
+					FileUtils.fileToString(fragmentShader));
 			shaderProgram.createUniform("projectionMatrix");
 			shaderProgram.createUniform("modelMatrix");
 			shaderProgram.createUniform("viewMatrix");
@@ -102,21 +104,18 @@ public class TestScreen extends FerretScreen {
 	float b = 0.32f;
 
 	float rotation = 0.0f;
-	
+
 	@Override
 	public void onUpdate(float delta) {
 
 		rotation += 0.6f;
-		
-		if (rotation > 360) rotation = 0;
-		
-//		cubeEntity.setRotation(0, 1, 0, (float) Math.toRadians(rotation));
-		
-		clearColor.set(r, g, b);
-	}
 
-	@Override
-	public void onUiRender() {
+		if (rotation > 360)
+			rotation = 0;
+
+		cubeEntity.setRotation(0, 1, 0, (float) Math.toRadians(rotation));
+
+		clearColor.set(r, g, b);
 	}
 
 	@Override
@@ -157,6 +156,10 @@ public class TestScreen extends FerretScreen {
 	@Override
 	public void onResize(int width, int height) {
 		projection.updateProjectionMatrix(width, height);
+	}
+
+	@Override
+	public void onImGuiRender() {
 	}
 
 }

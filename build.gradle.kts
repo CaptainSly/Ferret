@@ -17,6 +17,7 @@ val lwjglVersion = "3.3.3"
 val jomlVersion = "1.10.5"
 val `joml-primitivesVersion` = "1.10.0"
 val lwjglNatives = "natives-windows"
+val imguiVersion = "1.86.11"
 
 repositories {
     mavenCentral()
@@ -37,6 +38,12 @@ dependencies {
 
 	// LuaJ
 	implementation("org.luaj:luaj-jse:3.0.1")
+
+	// ImGUI Implementation
+	implementation("io.github.spair:imgui-java-binding:$imguiVersion")
+    implementation("io.github.spair:imgui-java-lwjgl3:$imguiVersion")
+    
+    implementation("io.github.spair:imgui-java-natives-windows:$imguiVersion")
 
 	// LWJGL Implementation
 	implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))

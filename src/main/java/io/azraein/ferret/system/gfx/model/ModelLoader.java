@@ -11,7 +11,6 @@ import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import org.lwjgl.system.MemoryStack;
-import org.tinylog.Logger;
 
 import io.azraein.ferret.system.gfx.mesh.Mesh;
 import io.azraein.ferret.system.gfx.textures.TextureCache;
@@ -84,46 +83,46 @@ public class ModelLoader {
 	}
 
 	private static int[] processIndices(AIMesh aiMesh) {
-        List<Integer> indices = new ArrayList<>();
-        int numFaces = aiMesh.mNumFaces();
-        AIFace.Buffer aiFaces = aiMesh.mFaces();
-        for (int i = 0; i < numFaces; i++) {
-            AIFace aiFace = aiFaces.get(i);
-            IntBuffer buffer = aiFace.mIndices();
-            while (buffer.remaining() > 0) {
-                indices.add(buffer.get());
-            }
-        }
-        return indices.stream().mapToInt(Integer::intValue).toArray();
-    }
-	
-    private static float[] processTexCoords(AIMesh aiMesh) {
-        AIVector3D.Buffer buffer = aiMesh.mTextureCoords(0);
-        if (buffer == null) {
-            return new float[]{};
-        }
-        float[] data = new float[buffer.remaining() * 2];
-        int pos = 0;
-        while (buffer.remaining() > 0) {
-            AIVector3D textCoord = buffer.get();
-            data[pos++] = textCoord.x();
-            data[pos++] = 1 - textCoord.y();
-        }
-        return data;
-    }
+		List<Integer> indices = new ArrayList<>();
+		int numFaces = aiMesh.mNumFaces();
+		AIFace.Buffer aiFaces = aiMesh.mFaces();
+		for (int i = 0; i < numFaces; i++) {
+			AIFace aiFace = aiFaces.get(i);
+			IntBuffer buffer = aiFace.mIndices();
+			while (buffer.remaining() > 0) {
+				indices.add(buffer.get());
+			}
+		}
+		return indices.stream().mapToInt(Integer::intValue).toArray();
+	}
 
-    private static float[] processVertices(AIMesh aiMesh) {
-        AIVector3D.Buffer buffer = aiMesh.mVertices();
-        float[] data = new float[buffer.remaining() * 3];
-        int pos = 0;
-        while (buffer.remaining() > 0) {
-            AIVector3D vertex = buffer.get();
-            data[pos++] = vertex.x();
-            data[pos++] = vertex.y();
-            data[pos++] = vertex.z();
-        }
-        return data;
-    }
+	private static float[] processTexCoords(AIMesh aiMesh) {
+		AIVector3D.Buffer buffer = aiMesh.mTextureCoords(0);
+		if (buffer == null) {
+			return new float[] {};
+		}
+		float[] data = new float[buffer.remaining() * 2];
+		int pos = 0;
+		while (buffer.remaining() > 0) {
+			AIVector3D textCoord = buffer.get();
+			data[pos++] = textCoord.x();
+			data[pos++] = 1 - textCoord.y();
+		}
+		return data;
+	}
+
+	private static float[] processVertices(AIMesh aiMesh) {
+		AIVector3D.Buffer buffer = aiMesh.mVertices();
+		float[] data = new float[buffer.remaining() * 3];
+		int pos = 0;
+		while (buffer.remaining() > 0) {
+			AIVector3D vertex = buffer.get();
+			data[pos++] = vertex.x();
+			data[pos++] = vertex.y();
+			data[pos++] = vertex.z();
+		}
+		return data;
+	}
 
 	private static Material processMaterial(AIMaterial aiMaterial, String modelDir, TextureCache textureCache) {
 		Material material = new Material();
@@ -131,10 +130,8 @@ public class ModelLoader {
 			AIColor4D color = AIColor4D.create();
 
 			int result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, aiTextureType_NONE, 0, color);
-			if (result == aiReturn_SUCCESS) {
-				Logger.debug("Color: " + color.r() + ", " + color.g() + ", " + color.b() + ", " + color.a());
+			if (result == aiReturn_SUCCESS)
 				material.setDiffuseColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
-			}
 
 			AIString aiTexturePath = AIString.calloc(stack);
 			aiGetMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, 0, aiTexturePath, (IntBuffer) null, null, null,

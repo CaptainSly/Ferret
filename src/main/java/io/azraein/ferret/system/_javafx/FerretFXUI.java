@@ -5,7 +5,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 @Deprecated
-public class FerretUI extends Application {
+public class FerretFXUI extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {

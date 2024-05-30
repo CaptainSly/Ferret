@@ -1,4 +1,4 @@
-package io.azraein.ferret.system;
+package io.azraein.ferret.system.gfx;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -9,16 +9,21 @@ import java.util.Map;
 
 import org.joml.Vector3f;
 
+import imgui.ImGui;
+import imgui.flag.ImGuiCond;
 import io.azraein.ferret.interfaces.Disposable;
+import io.azraein.ferret.interfaces.GuiInstance;
+import io.azraein.ferret.system.Engine;
 import io.azraein.ferret.system.gfx.mesh.Entity;
 import io.azraein.ferret.system.gfx.model.Model;
 import io.azraein.ferret.system.gfx.textures.TextureCache;
 
-public abstract class FerretScreen implements Disposable {
+public abstract class FerretScreen implements Disposable, GuiInstance {
 
 	// Clear Color
 	protected Vector3f clearColor = new Vector3f(1, 1, 1);
 
+	// Screen main members
 	protected Engine engine;
 	protected TextureCache textureCache;
 	protected Map<String, Model> modelMap;
@@ -38,9 +43,18 @@ public abstract class FerretScreen implements Disposable {
 
 	public abstract void onRender();
 
-	public abstract void onUiRender();
+	public abstract void onImGuiRender();
 
 	public abstract void onResize(int width, int height);
+
+	@Override
+	public void onRenderUi() {
+		ImGui.newFrame();
+		ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
+		onImGuiRender();
+		ImGui.endFrame();
+		ImGui.render();
+	}
 
 	public void render() {
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1);
@@ -50,11 +64,6 @@ public abstract class FerretScreen implements Disposable {
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_BACK);
 		onRender();
-	}
-
-	public void renderUi() {
-		
-		onUiRender();
 	}
 
 	public void updateScreen(float delta) {
@@ -68,6 +77,14 @@ public abstract class FerretScreen implements Disposable {
 		}
 
 		onUpdate(delta);
+	}
+
+	public void input(float delta) {
+		onInput(delta);
+	}
+
+	public void resize(int width, int height) {
+		onResize(width, height);
 	}
 
 	protected void addModel(Model model) {

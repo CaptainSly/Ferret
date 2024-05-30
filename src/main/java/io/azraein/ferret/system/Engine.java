@@ -12,7 +12,9 @@ import org.tinylog.Logger;
 import io.azraein.ferret.TestScreen;
 import io.azraein.ferret.interfaces.Disposable;
 import io.azraein.ferret.system.calendar.Calendar;
+import io.azraein.ferret.system.gfx.FerretScreen;
 import io.azraein.ferret.system.gfx.Window;
+import io.azraein.ferret.system.gfx.gui.FerretGui;
 import io.azraein.ferret.system.input.Input;
 import io.azraein.ferret.system.lua.FerretLua;
 import io.azraein.ferret.system.utilities.Utils;
@@ -25,6 +27,7 @@ public class Engine implements Disposable {
 	// Current Game Screen | TODO: Create an array of them and switch to when
 	// needed.
 	private FerretScreen currentGameScreen;
+	private FerretGui ferretGui;
 
 	// Game Loop Variables
 	private boolean isRunning = false;
@@ -66,9 +69,6 @@ public class Engine implements Disposable {
 		Ferret.input = new Input();
 		Ferret.registry = new Registry();
 
-		// Create the Game Screens
-		currentGameScreen = new TestScreen(this);
-
 		// Setup GLFW Callbacks
 
 		// Input Callbacks
@@ -82,9 +82,14 @@ public class Engine implements Disposable {
 		// Resize Callback
 		glfwSetFramebufferSizeCallback(window.getWindowPointer(), (window, width, height) -> onResize(width, height));
 
+		// Create the Game Screens
+		currentGameScreen = new TestScreen(this);
+
 		// Create Ferret Lua at the end of initialization but before screen
 		// initialization.
 		luaEngine = new FerretLua();
+		ferretGui = new FerretGui(window);
+
 		currentGameScreen.onInit();
 	}
 
@@ -113,19 +118,19 @@ public class Engine implements Disposable {
 
 			if (targetFps <= 0 || deltaFps >= 1) {
 				float delta = (now - initialTime) / 1000.f;
-				input(delta);
+				onInput(delta);
 			}
 
 			if (deltaUpdate >= 1) {
 				float delta = (now - updateTime) / 1000.f;
-				update(delta);
+				onUpdate(delta);
 				updateTime = now;
 				deltaUpdate--;
 			}
 
 			if (targetFps <= 0 || deltaFps >= 1) {
 				glViewport(0, 0, window.getWindowWidth(), window.getWindowHeight());
-				render();
+				onRender();
 				glfwSwapBuffers(window.getWindowPointer());
 				deltaFps--;
 			}
@@ -136,12 +141,13 @@ public class Engine implements Disposable {
 
 	public void onResize(int width, int height) {
 		window.resize(width, height);
-		currentGameScreen.onResize(width, height);
+		currentGameScreen.resize(width, height);
+		ferretGui.resize(width, height);
 	}
 
 	private float lastCalendarUpdateTime = 0.0f;
 
-	private void update(float delta) {
+	private void onUpdate(float delta) {
 
 		lastCalendarUpdateTime += delta;
 		if (lastCalendarUpdateTime >= Utils.getCalendarUpdateInterval(32)) {
@@ -152,17 +158,24 @@ public class Engine implements Disposable {
 		currentGameScreen.updateScreen(delta);
 	}
 
-	private void render() {
+	private void onRender() {
 		currentGameScreen.render();
-		currentGameScreen.renderUi();
+		ferretGui.render(currentGameScreen);
 	}
 
-	private void input(float delta) {
+	private void onInput(float delta) {
 		Ferret.input.update();
-		currentGameScreen.onInput(delta);
 
-		if (Ferret.input.isKeyDown(GLFW_KEY_ESCAPE))
-			glfwSetWindowShouldClose(window.getWindowPointer(), true);
+		boolean inputConsumed = currentGameScreen.handleGuiInput(window);
+
+		if (inputConsumed)
+			return;
+		else {
+			currentGameScreen.input(delta);
+
+			if (Ferret.input.isKeyDown(GLFW_KEY_ESCAPE))
+				glfwSetWindowShouldClose(window.getWindowPointer(), true);
+		}
 	}
 
 	public Window getWindow() {
@@ -175,6 +188,8 @@ public class Engine implements Disposable {
 
 	@Override
 	public void onDispose() {
+		currentGameScreen.onDispose();
+
 		// Free the window callbacks and destroy the window
 		glfwFreeCallbacks(window.getWindowPointer());
 		glfwDestroyWindow(window.getWindowPointer());
