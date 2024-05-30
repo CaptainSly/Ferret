@@ -9,8 +9,8 @@ import io.azraein.ferret.system.utilities.Utils;
 
 public class Calendar {
 
-	private final String[] months = { "Frost Mouth", "Rains Hand", "Suns Fury", "Leaf Harvest" };
-	private final String[] days = { "Foresday", "Tinsday", "Middas", "Laosday" };
+	private final String[] months = { "Month_1", "Month_2", "Month_3", "Month_4" };
+	private final String[] days = { "Day_1", "Day_2", "Day_3", "Day_4" };
 
 	private int hours, minutes;
 	private int day, week, month, year;

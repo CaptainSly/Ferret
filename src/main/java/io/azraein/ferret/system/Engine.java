@@ -31,8 +31,11 @@ public class Engine implements Disposable {
 
 	// Game Loop Variables
 	private boolean isRunning = false;
-	private float targetUps = 60;
-	private float targetFps = 120;
+	private float targetFps = 60;
+
+	private long lastFpsTime = 0;
+	private int fps = 0;
+	private int fpsCounter = 0;
 
 	public void run() {
 		// Startup
@@ -58,7 +61,7 @@ public class Engine implements Disposable {
 		window = new Window("Ferret Engine: " + Ferret.FERRET_VERSION, 1280, 720);
 
 		glfwMakeContextCurrent(window.getWindowPointer());
-		glfwSwapInterval(1);
+//		glfwSwapInterval(1);
 
 		glfwShowWindow(window.getWindowPointer());
 
@@ -98,11 +101,14 @@ public class Engine implements Disposable {
 
 		// Setup GameLoop
 		long initialTime = System.currentTimeMillis();
-		float timeUpdate = 1000.f / targetUps;
+		float timeUpdate = 1000.f / targetFps;
 		float timeRender = targetFps > 0 ? 1000.f / targetFps : 0;
 
 		float deltaUpdate = 0;
 		float deltaFps = 0;
+
+		lastFpsTime = System.currentTimeMillis();
+		fpsCounter = 0;
 
 		long updateTime = initialTime;
 		while (isRunning) {
@@ -133,8 +139,16 @@ public class Engine implements Disposable {
 				onRender();
 				glfwSwapBuffers(window.getWindowPointer());
 				deltaFps--;
+				fpsCounter++;
 			}
 
+			// Update FPS Every Second
+			if (now - lastFpsTime >= 1000) {
+				fps = fpsCounter;
+				fpsCounter = 0;
+				lastFpsTime = now;
+			}
+			
 			initialTime = now;
 		}
 	}
@@ -176,6 +190,10 @@ public class Engine implements Disposable {
 			if (Ferret.input.isKeyDown(GLFW_KEY_ESCAPE))
 				glfwSetWindowShouldClose(window.getWindowPointer(), true);
 		}
+	}
+
+	public int getFps() {
+		return fps;
 	}
 
 	public Window getWindow() {

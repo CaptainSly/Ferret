@@ -10,6 +10,7 @@ import java.util.List;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
+import imgui.ImGui;
 import io.azraein.ferret.system.Engine;
 import io.azraein.ferret.system.Ferret;
 import io.azraein.ferret.system.gfx.Camera;
@@ -160,6 +161,11 @@ public class TestScreen extends FerretScreen {
 
 	@Override
 	public void onImGuiRender() {
+		ImGui.begin("Debug Panel");
+		ImGui.text("FPS: " + engine.getFps());
+		ImGui.text("Current Time: " + Ferret.gameCalendar.getTimeAsString(false));
+		ImGui.text("Current Date: " + Ferret.gameCalendar.getDateAsString());
+		ImGui.end();
 	}
 
 }

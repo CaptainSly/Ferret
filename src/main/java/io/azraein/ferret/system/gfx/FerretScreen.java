@@ -10,7 +10,6 @@ import java.util.Map;
 import org.joml.Vector3f;
 
 import imgui.ImGui;
-import imgui.flag.ImGuiCond;
 import io.azraein.ferret.interfaces.Disposable;
 import io.azraein.ferret.interfaces.GuiInstance;
 import io.azraein.ferret.system.Engine;
@@ -50,7 +49,6 @@ public abstract class FerretScreen implements Disposable, GuiInstance {
 	@Override
 	public void onRenderUi() {
 		ImGui.newFrame();
-		ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
 		onImGuiRender();
 		ImGui.endFrame();
 		ImGui.render();
