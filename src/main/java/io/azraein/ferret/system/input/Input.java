@@ -5,12 +5,16 @@ import static org.lwjgl.glfw.GLFW.*;
 import org.joml.Vector2f;
 import org.tinylog.Logger;
 
+import io.azraein.ferret.system.gfx.Window;
+
 public class Input {
 
 	// Mouse Input
 	private Vector2f currentMousePos;
 	private Vector2f previousMousePos;
 	private Vector2f displayVector;
+
+	private boolean mouseCaptured;
 
 	private boolean[] mouseBtns;
 
@@ -30,7 +34,7 @@ public class Input {
 		mouseBtns = new boolean[GLFW_MOUSE_BUTTON_LAST];
 
 		keysDown = new boolean[GLFW_KEY_LAST];
-		keysUp = new boolean[GLFW_KEY_LAST];		
+		keysUp = new boolean[GLFW_KEY_LAST];
 	}
 
 	public void key_callback(long window, int key, int scanCode, int action, int mods) {
@@ -73,7 +77,7 @@ public class Input {
 			Logger.debug("Connected Controller: " + glfwGetJoystickName(joystickId));
 		} else if (event == GLFW_DISCONNECTED) {
 			Logger.debug("Disconnected Controller: " + glfwGetJoystickName(joystickId));
-		
+
 		}
 
 	}
@@ -97,6 +101,16 @@ public class Input {
 		previousMousePos.y = currentMousePos.y;
 	}
 
+	public void captureMouse(Window window) {
+		mouseCaptured = true;
+		glfwSetInputMode(window.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
+	public void releaseMouse(Window window) {
+		mouseCaptured = false;
+		glfwSetInputMode(window.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
 	public boolean isKeyDown(int keyCode) {
 		return keysDown[keyCode];
 	}
@@ -107,6 +121,10 @@ public class Input {
 
 	public boolean isMouseBtnDown(int btn) {
 		return mouseBtns[btn];
+	}
+
+	public boolean isMouseCaptured() {
+		return mouseCaptured;
 	}
 
 	// Private Input Methods

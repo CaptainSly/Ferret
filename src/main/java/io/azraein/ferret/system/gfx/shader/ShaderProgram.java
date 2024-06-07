@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
@@ -84,8 +85,16 @@ public class ShaderProgram implements Disposable {
 		glUniform1i(getUniform(uniformName), value);
 	}
 
+	public void setUniform(String uniformName, float value) {
+		glUniform1f(getUniform(uniformName), value);
+	}
+
 	public void setUniform(String uniformName, Vector2f value) {
 		glUniform2f(getUniform(uniformName), value.x, value.y);
+	}
+
+	public void setUniform(String uniformName, Vector3f value) {
+		glUniform3f(getUniform(uniformName), value.x, value.y, value.z);
 	}
 
 	public void setUniform(String uniformName, Vector4f value) {

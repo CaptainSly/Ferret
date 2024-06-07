@@ -13,13 +13,13 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.Callback;
 
-import io.azraein.ferret.TestScreen;
 import io.azraein.ferret.system.Ferret;
 import io.azraein.ferret.system.Registry;
 import io.azraein.ferret.system.calendar.Calendar;
-import io.azraein.ferret.system.gfx.FerretScreen;
 import io.azraein.ferret.system.input.Input;
 import io.azraein.ferret.system.lua.FerretLua;
+import io.azraein.ferret.system.screens.FerretScreen;
+import io.azraein.ferret.system.screens.TestScreen;
 import io.azraein.ferret.system.utilities.Utils;
 import javafx.scene.layout.BorderPane;
 

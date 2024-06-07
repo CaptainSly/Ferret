@@ -16,10 +16,15 @@ public class Material implements Disposable {
 	private String texturePath;
 
 	private Vector4f diffuseColor;
+	private Vector4f ambientColor;
+	private Vector4f specularColor;
+
+	private float reflectance;
 
 	public Material() {
 		meshList = new ArrayList<>();
 		diffuseColor = DEFAULT_COLOR;
+		ambientColor = DEFAULT_COLOR;
 	}
 
 	public List<Mesh> getMeshList() {
@@ -40,6 +45,30 @@ public class Material implements Disposable {
 
 	public void setDiffuseColor(Vector4f diffuseColor) {
 		this.diffuseColor = diffuseColor;
+	}
+
+	public Vector4f getAmbientColor() {
+		return ambientColor;
+	}
+
+	public Vector4f getSpecularColor() {
+		return specularColor;
+	}
+
+	public float getReflectance() {
+		return reflectance;
+	}
+
+	public void setAmbientColor(Vector4f ambientColor) {
+		this.ambientColor = ambientColor;
+	}
+
+	public void setSpecularColor(Vector4f specularColor) {
+		this.specularColor = specularColor;
+	}
+
+	public void setReflectance(float reflectance) {
+		this.reflectance = reflectance;
 	}
 
 	@Override

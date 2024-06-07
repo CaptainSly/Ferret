@@ -1,10 +1,10 @@
-package io.azraein.ferret.system.gfx.mesh;
+package io.azraein.ferret.system.gfx.model;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class Entity {
+public class ModelEntity {
 
 	private final String id;
 	private final String modelId;
@@ -14,7 +14,7 @@ public class Entity {
 	private Vector3f scale;
 	private Quaternionf rotation;
 
-	public Entity(String id, String modelId) {
+	public ModelEntity(String id, String modelId) {
 		this.id = id;
 		this.modelId = modelId;
 

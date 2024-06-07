@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
+import org.tinylog.Logger;
 
 import io.azraein.ferret.interfaces.Disposable;
 
@@ -28,11 +29,16 @@ public class Mesh implements Disposable {
 
 	private List<Integer> vboIdList;
 
-	public Mesh(float[] positions, float[] texCoords, int[] indices) {
+	public Mesh(float[] positions, float[] normals, float[] texCoords, int[] indices) {
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			numVertices = indices.length;
 			vboIdList = new ArrayList<>();
 
+			Logger.debug("Positions Size: " + positions.length);
+			Logger.debug("Normals Size: " + normals.length);
+			Logger.debug("TextureCoords Size: " + texCoords.length);
+			Logger.debug("Indices Size: " + indices.length);
+			
 			vaoId = glGenVertexArrays();
 			glBindVertexArray(vaoId);
 
@@ -46,6 +52,16 @@ public class Mesh implements Disposable {
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
+			// Normals VBO
+			vboId = glGenBuffers();
+			vboIdList.add(vboId);
+			FloatBuffer normalsBuffer = stack.callocFloat(normals.length);
+			normalsBuffer.put(0, normals);
+			glBindBuffer(GL_ARRAY_BUFFER, vboId);
+			glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+
 			// Texture Coordinates VBO
 			vboId = glGenBuffers();
 			vboIdList.add(vboId);
@@ -53,9 +69,9 @@ public class Mesh implements Disposable {
 			textCoordsBuffer.put(0, texCoords);
 			glBindBuffer(GL_ARRAY_BUFFER, vboId);
 			glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
-			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-			
+			glEnableVertexAttribArray(2);
+			glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+
 			// Index VBO
 			vboId = glGenBuffers();
 			vboIdList.add(vboId);
@@ -64,7 +80,7 @@ public class Mesh implements Disposable {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
 
-			glBindBuffer(GL_ARRAY_BUFFER, 0);			
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
 
 		}

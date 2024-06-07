@@ -1,71 +1,62 @@
-package io.azraein.ferret;
+package io.azraein.ferret.system.screens;
 
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import imgui.ImGui;
+import io.azraein.ferret.DebugGui;
 import io.azraein.ferret.system.Engine;
 import io.azraein.ferret.system.Ferret;
-import io.azraein.ferret.system.gfx.Camera;
-import io.azraein.ferret.system.gfx.FerretScreen;
-import io.azraein.ferret.system.gfx.mesh.Entity;
+import io.azraein.ferret.system.gfx.Window;
+import io.azraein.ferret.system.gfx.lights.SpotLight;
 import io.azraein.ferret.system.gfx.mesh.Mesh;
 import io.azraein.ferret.system.gfx.model.Material;
 import io.azraein.ferret.system.gfx.model.Model;
+import io.azraein.ferret.system.gfx.model.ModelEntity;
 import io.azraein.ferret.system.gfx.model.ModelLoader;
-import io.azraein.ferret.system.gfx.shader.Projection;
-import io.azraein.ferret.system.gfx.shader.ShaderProgram;
 import io.azraein.ferret.system.gfx.textures.Texture;
-import io.azraein.ferret.system.utilities.FileUtils;
 
 public class TestScreen extends FerretScreen {
-
-	private ShaderProgram shaderProgram;
-	private Projection projection;
-	private Camera camera;
 
 	public TestScreen(Engine engine) {
 		super(engine);
 	}
 
-	private Entity cubeEntity;
+	private ModelEntity cubeEntity;
 
 	@Override
 	public void onInit() {
-		projection = new Projection((int) engine.getWindow().getWindowWidth(),
-				(int) engine.getWindow().getWindowHeight());
-
-		String vertexShader = "src/main/resources/shaders/default/default_vertex.glsl";
-		String fragmentShader = "src/main/resources/shaders/default/default_fragment.glsl";
-
-		try {
-			shaderProgram = new ShaderProgram(FileUtils.fileToString(vertexShader),
-					FileUtils.fileToString(fragmentShader));
-			shaderProgram.createUniform("projectionMatrix");
-			shaderProgram.createUniform("modelMatrix");
-			shaderProgram.createUniform("viewMatrix");
-			shaderProgram.createUniform("textureSampler");
-			shaderProgram.createUniform("material.diffuse");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		camera = new Camera();
+		// Shader Stuff
+		shaderProgram.createUniform("projectionMatrix");
+		shaderProgram.createUniform("modelMatrix");
+		shaderProgram.createUniform("viewMatrix");
+		shaderProgram.createUniform("textureSampler");
+		shaderProgram.createUniform("material.diffuse");
+		shaderProgram.createUniform("material.ambient");
+		shaderProgram.createUniform("material.specular");
+		shaderProgram.createUniform("material.reflectance");
+		screenLights.createUniforms(shaderProgram);
 
 		Model cubeModel = ModelLoader.loadModel("cube-model", "src/main/resources/models/cube/model.obj", textureCache);
 		addModel(cubeModel);
 
-		cubeEntity = new Entity("cube-entity", cubeModel.getId());
+		cubeEntity = new ModelEntity("cube-entity", cubeModel.getId());
 		cubeEntity.setPosition(0, 0, -2);
-		cubeEntity.setScale(0.005f);
+		cubeEntity.setScale(0.01f);
 		addEntity(cubeEntity);
+
+		var spot = new SpotLight("flashlight", new Vector3f(1, 1, 1),
+				new Vector3f(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z - 3f),
+				new Vector3f(0, 0, -1), 0.3f, 0.45f);
+
+		screenLights.addSpotLights(spot);
+
+		screenLights.getAmbientLight().setIntensity(0.3f);
 	}
 
 	private float mouseSensitivity = 0.1f;
@@ -74,6 +65,11 @@ public class TestScreen extends FerretScreen {
 	@Override
 	public void onInput(float delta) {
 		float move = movementSpeed * delta;
+
+		if (Ferret.input.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL))
+			movementSpeed = 4f;
+		else
+			movementSpeed = 2f;
 
 		if (Ferret.input.isKeyDown(GLFW.GLFW_KEY_W)) {
 			camera.moveForward(move);
@@ -86,29 +82,29 @@ public class TestScreen extends FerretScreen {
 		} else if (Ferret.input.isKeyDown(GLFW.GLFW_KEY_D)) {
 			camera.moveRight(move);
 		}
-		if (Ferret.input.isKeyDown(GLFW.GLFW_KEY_UP)) {
+		if (Ferret.input.isKeyDown(GLFW.GLFW_KEY_SPACE)) {
 			camera.moveUp(move);
-		} else if (Ferret.input.isKeyDown(GLFW.GLFW_KEY_DOWN)) {
+		} else if (Ferret.input.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
 			camera.moveDown(move);
 		}
 
-		if (Ferret.input.isMouseBtnDown(GLFW.GLFW_MOUSE_BUTTON_2)) {
+		if (Ferret.input.isMouseBtnDown(GLFW.GLFW_MOUSE_BUTTON_1)) {
 			Vector2f displVec = Ferret.input.getDisplayVector();
 			camera.addRotation((float) Math.toRadians(-displVec.x * mouseSensitivity),
 					(float) Math.toRadians(-displVec.y * mouseSensitivity));
 		}
-
+		
 	}
 
-	float r = 0.32f;
-	float g = 0.32f;
-	float b = 0.32f;
+	@Override
+	public boolean handleGuiInput(Window window) {
+		return DebugGui.handleInput(window);
+	}
 
 	float rotation = 0.0f;
 
 	@Override
 	public void onUpdate(float delta) {
-
 		rotation += 0.6f;
 
 		if (rotation > 360)
@@ -116,39 +112,45 @@ public class TestScreen extends FerretScreen {
 
 		cubeEntity.setRotation(0, 1, 0, (float) Math.toRadians(rotation));
 
-		clearColor.set(r, g, b);
 	}
 
 	@Override
 	public void onRender() {
 		shaderProgram.bind();
 		{
+			// Set Projection View
 			shaderProgram.setUniform("projectionMatrix", projection.getProjectionMatrix());
 			shaderProgram.setUniform("viewMatrix", camera.getViewMatrix());
+
+			// Set default TextureSampler = 0
 			shaderProgram.setUniform("textureSampler", 0);
 
+			// Update Lights
+			screenLights.updateLights(shaderProgram, camera);
+
+			// Draw Models
 			Collection<Model> models = modelMap.values();
 			for (Model model : models) {
-				List<Entity> modelEntities = model.getEntitiesList();
-				List<Material> modelMaterials = model.getMaterialList();
-
-				for (Material material : modelMaterials) {
+				for (Material material : model.getMaterialList()) {
+					shaderProgram.setUniform("material.ambient", material.getAmbientColor());
 					shaderProgram.setUniform("material.diffuse", material.getDiffuseColor());
+					shaderProgram.setUniform("material.specular", material.getSpecularColor());
+					shaderProgram.setUniform("material.reflectance", material.getReflectance());
 					Texture texture = textureCache.getTexture(material.getTexturePath());
 					glActiveTexture(GL_TEXTURE0);
 					texture.bind();
 
-					List<Mesh> materialMeshes = material.getMeshList();
-					for (Mesh mesh : materialMeshes) {
-						for (Entity entity : modelEntities) {
+					for (Mesh mesh : material.getMeshList()) {
+
+						for (ModelEntity entity : model.getEntitiesList()) {
 							shaderProgram.setUniform("modelMatrix", entity.getModelMatrix());
 							mesh.draw();
 						}
+
 					}
 
 					texture.unbind();
 				}
-
 			}
 		}
 		shaderProgram.unbind();
@@ -161,11 +163,7 @@ public class TestScreen extends FerretScreen {
 
 	@Override
 	public void onImGuiRender() {
-		ImGui.begin("Debug Panel");
-		ImGui.text("FPS: " + engine.getFps());
-		ImGui.text("Current Time: " + Ferret.gameCalendar.getTimeAsString(false));
-		ImGui.text("Current Date: " + Ferret.gameCalendar.getDateAsString());
-		ImGui.end();
+		DebugGui.drawGui(this, engine);
 	}
 
 }

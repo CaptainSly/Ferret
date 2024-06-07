@@ -4,19 +4,23 @@ import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glViewport;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.tinylog.Logger;
 
-import io.azraein.ferret.TestScreen;
 import io.azraein.ferret.interfaces.Disposable;
 import io.azraein.ferret.system.calendar.Calendar;
-import io.azraein.ferret.system.gfx.FerretScreen;
 import io.azraein.ferret.system.gfx.Window;
 import io.azraein.ferret.system.gfx.gui.FerretGui;
 import io.azraein.ferret.system.input.Input;
 import io.azraein.ferret.system.lua.FerretLua;
+import io.azraein.ferret.system.screens.EditorScreen;
+import io.azraein.ferret.system.screens.FerretScreen;
+import io.azraein.ferret.system.screens.TestScreen;
 import io.azraein.ferret.system.utilities.Utils;
 
 public class Engine implements Disposable {
@@ -24,8 +28,7 @@ public class Engine implements Disposable {
 	private FerretLua luaEngine;
 	private Window window;
 
-	// Current Game Screen | TODO: Create an array of them and switch to when
-	// needed.
+	private Map<String, FerretScreen> ferretGameScreens;
 	private FerretScreen currentGameScreen;
 	private FerretGui ferretGui;
 
@@ -33,12 +36,9 @@ public class Engine implements Disposable {
 	private boolean isRunning = false;
 	private float targetFps = 60;
 
-	private long lastFpsTime = 0;
-	private int fps = 0;
-	private int fpsCounter = 0;
+	private double frameTime = 0.0;
 
 	public void run() {
-		// Startup
 		Ferret.FERRET_VERSION += " -GLFW Backend";
 
 		Logger.info("LWJGL Version: " + Version.getVersion());
@@ -58,14 +58,16 @@ public class Engine implements Disposable {
 		if (!glfwInit())
 			throw new IllegalStateException("Unable to initialize GLFW");
 
-		window = new Window("Ferret Engine: " + Ferret.FERRET_VERSION, 1280, 720);
+		window = new Window("Ferret Engine", 1280, 720);
 
 		glfwMakeContextCurrent(window.getWindowPointer());
-//		glfwSwapInterval(1);
+		glfwSwapInterval(1);
 
 		glfwShowWindow(window.getWindowPointer());
 
 		GL.createCapabilities();
+
+		ferretGameScreens = new HashMap<>();
 
 		// ALL ACTUAL GAME LOADING GOES DOWN HERE
 		Ferret.gameCalendar = new Calendar();
@@ -86,7 +88,9 @@ public class Engine implements Disposable {
 		glfwSetFramebufferSizeCallback(window.getWindowPointer(), (window, width, height) -> onResize(width, height));
 
 		// Create the Game Screens
-		currentGameScreen = new TestScreen(this);
+		ferretGameScreens.put("testScreen", new TestScreen(this));
+		ferretGameScreens.put("editorScreen", new EditorScreen(this));
+		currentGameScreen = ferretGameScreens.get("testScreen");
 
 		// Create Ferret Lua at the end of initialization but before screen
 		// initialization.
@@ -99,16 +103,16 @@ public class Engine implements Disposable {
 	private void loop() {
 		isRunning = true;
 
+		double lastTime = glfwGetTime();
+		int nbFrames = 0;
+
 		// Setup GameLoop
 		long initialTime = System.currentTimeMillis();
 		float timeUpdate = 1000.f / targetFps;
-		float timeRender = targetFps > 0 ? 1000.f / targetFps : 0;
+		float timeRender = 1000.f / targetFps;
 
 		float deltaUpdate = 0;
 		float deltaFps = 0;
-
-		lastFpsTime = System.currentTimeMillis();
-		fpsCounter = 0;
 
 		long updateTime = initialTime;
 		while (isRunning) {
@@ -117,6 +121,15 @@ public class Engine implements Disposable {
 			deltaFps += (now - initialTime) / timeRender;
 
 			glfwPollEvents();
+
+			double cTime = glfwGetTime();
+			nbFrames++;
+
+			if (cTime - lastTime >= 1.0) {
+				frameTime = (1000.0 / nbFrames);
+				nbFrames = 0;
+				lastTime += 1.0;
+			}
 
 			// Window Should Close
 			if (glfwWindowShouldClose(window.getWindowPointer()))
@@ -139,16 +152,8 @@ public class Engine implements Disposable {
 				onRender();
 				glfwSwapBuffers(window.getWindowPointer());
 				deltaFps--;
-				fpsCounter++;
 			}
 
-			// Update FPS Every Second
-			if (now - lastFpsTime >= 1000) {
-				fps = fpsCounter;
-				fpsCounter = 0;
-				lastFpsTime = now;
-			}
-			
 			initialTime = now;
 		}
 	}
@@ -189,11 +194,24 @@ public class Engine implements Disposable {
 
 			if (Ferret.input.isKeyDown(GLFW_KEY_ESCAPE))
 				glfwSetWindowShouldClose(window.getWindowPointer(), true);
+
+			if (Ferret.input.isKeyDown(GLFW_KEY_F11))
+				if (Ferret.input.isMouseCaptured())
+					Ferret.input.releaseMouse(window);
+				else
+					Ferret.input.captureMouse(window);
+
 		}
 	}
 
-	public int getFps() {
-		return fps;
+	public void changeScreen(String screenId) {
+		currentGameScreen.onDispose();
+		currentGameScreen = ferretGameScreens.get(screenId);
+		currentGameScreen.onInit();
+	}
+
+	public double getFrameTime() {
+		return frameTime;
 	}
 
 	public Window getWindow() {

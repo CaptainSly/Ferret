@@ -22,8 +22,6 @@ public class Calendar {
 
 	private boolean timePaused = false;
 
-	private String era = "RE";
-
 	private List<Holiday> holidays;
 
 	private Holiday currentHoliday;
@@ -31,12 +29,12 @@ public class Calendar {
 
 	public Calendar() {
 		this.holidays = new ArrayList<>();
-		this.hours = 0;
+		this.hours = 12;
 		this.minutes = 0;
 		this.day = 1;
 		this.week = 1;
 		this.month = 1;
-		this.year = 164;
+		this.year = 0;
 	}
 
 	public void update() {
@@ -108,8 +106,8 @@ public class Calendar {
 	}
 
 	public String getDateAsString() {
-		String date = String.format("%d%s The %s of %s, %s", year, era, Utils.getSuffix(day), months[month - 1],
-				days[day - 1]);
+		String date = String.format("The %s of %s, %s, %d", Utils.getSuffix(day), months[month - 1],
+				days[day - 1], year);
 		return date;
 	}
 
@@ -125,9 +123,6 @@ public class Calendar {
 		return year;
 	}
 
-	public String getYearEra() {
-		return year + era;
-	}
 
 	public String getDayString() {
 		return days[day - 1];

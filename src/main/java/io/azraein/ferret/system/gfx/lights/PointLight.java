@@ -4,12 +4,14 @@ import org.joml.Vector3f;
 
 public class PointLight {
 
+	private String id;
+	
     private Attenuation attenuation;
     private Vector3f color;
     private float intensity;
     private Vector3f position;
 
-    public PointLight(Vector3f color, Vector3f position, float intensity) {
+    public PointLight(String id, Vector3f color, Vector3f position, float intensity) {
         attenuation = new Attenuation(0, 0, 1);
         this.color = color;
         this.position = position;
@@ -32,6 +34,10 @@ public class PointLight {
         return position;
     }
 
+    public String getId() {
+    	return id;
+    }
+    
     public void setAttenuation(Attenuation attenuation) {
         this.attenuation = attenuation;
     }
